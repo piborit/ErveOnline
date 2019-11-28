@@ -11,7 +11,7 @@ from pcloud import PyCloud
 import LoggerFactory
 import Utils
 
-def download(localSyncFolderConfig, cloudSyncFolderConfig):
+def download(localSyncFolderConfig, cloudSyncFolderConfig, backup):
     cloudConfig = CloudConfig()
 
     try:
@@ -22,6 +22,7 @@ def download(localSyncFolderConfig, cloudSyncFolderConfig):
 
         metadata = listFolderinfo["metadata"]
         contents = metadata["contents"]
+        backupfolder = os.path.join(localSyncFolderConfig.backupfolder, Utils.timestamp())
         for file in contents:
             if (not file["isfolder"]):
                 filename = file["name"]
@@ -29,7 +30,7 @@ def download(localSyncFolderConfig, cloudSyncFolderConfig):
                 filelink = pyCloud.getfilelink(path=cloudSyncFolderConfig.folder+"/"+filename)
                 downloadlink = 'https://' + filelink["hosts"][0] +  filelink["path"]
                 urllib.request.urlretrieve(downloadlink, os.path.join(localSyncFolderConfig.tmpfolder, filename));
-                Utils.copyToFolder(filename, localSyncFolderConfig.tmpfolder, localSyncFolderConfig.backupfolder)
+                if backup: Utils.copyToFolder(filename, localSyncFolderConfig.tmpfolder, backupfolder)
                 os.rename(os.path.join(localSyncFolderConfig.tmpfolder, filename), os.path.join(localSyncFolderConfig.folder, filename))
                 pyCloud.deletefile(path=cloudSyncFolderConfig.folder+"/"+filename)
     except:

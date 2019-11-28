@@ -1,9 +1,11 @@
 import sys
+import getopt
 import os
 import os.path
 
 import LoggerFactory
 import UploadFolder
+import ConfigUtils
 from ConfigUtils import SyncFolderConfig
 
 import time
@@ -14,13 +16,27 @@ class EventHandler(FileSystemEventHandler):
     def on_any_event(self, event):
         UploadFolder.upload(localSyncFolderConfig, cloudSyncFolderConfig)
 
-if (len(sys.argv) != 3):
-    print('Usage: upload <category> <origin>')
-    sys.exit(1)
+progname = os.path.basename(sys.argv[0])
+configfile = 'config.toml'
+category = ''
+origin = ''
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "hc:o:s:f:", ["category=", "origin=", "config="])
+except getopt.GetoptError:
+    print('Usage: ' + progname + ' -c <category> -o <origin> -f <configfile>')
+    sys.exit(2)
+for opt, arg in opts:
+    if opt == '-h':
+        print(progname + ' -c <category -o <origin> -f <configfile>')
+        sys.exit()
+    elif opt in ("-c", "--category"):
+        category = arg
+    elif opt in ("-o", "--origin"):
+        origin = arg
+    elif opt in ("-f", "--config"):
+        configfile = arg
 
-progname = sys.argv[0]
-category = sys.argv[1]
-origin = sys.argv[2]
+ConfigUtils.init(configfile)
 
 localSyncFolderConfig = SyncFolderConfig('local', category, 'out')
 cloudSyncFolderConfig = SyncFolderConfig('cloud', category, origin)
