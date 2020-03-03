@@ -11,6 +11,7 @@ from pcloud import PyCloud
 import LoggerFactory
 import Utils
 
+
 def download(localSyncFolderConfig, cloudSyncFolderConfig, backup):
     cloudConfig = CloudConfig()
 
@@ -26,12 +27,21 @@ def download(localSyncFolderConfig, cloudSyncFolderConfig, backup):
         for file in contents:
             if (not file["isfolder"]):
                 filename = file["name"]
-                LoggerFactory.getLogger().info("from=" + cloudSyncFolderConfig.folder + "," + "filename=" + filename + "," + "to=" + localSyncFolderConfig.folder)
-                filelink = pyCloud.getfilelink(path=cloudSyncFolderConfig.folder+"/"+filename)
-                downloadlink = 'https://' + filelink["hosts"][0] +  filelink["path"]
+                LoggerFactory.getLogger().info("filename=" + filename + "," + "from=" + cloudSyncFolderConfig.folder)
+                filelink = pyCloud.getfilelink(path=cloudSyncFolderConfig.folder + "/" + filename)
+                downloadlink = 'https://' + filelink["hosts"][0] + filelink["path"]
+                LoggerFactory.getLogger().info("-> download to=" + localSyncFolderConfig.tmpfolder);
                 urllib.request.urlretrieve(downloadlink, os.path.join(localSyncFolderConfig.tmpfolder, filename));
-                if backup: Utils.copyToFolder(filename, localSyncFolderConfig.tmpfolder, backupfolder)
-                os.rename(os.path.join(localSyncFolderConfig.tmpfolder, filename), os.path.join(localSyncFolderConfig.folder, filename))
-                pyCloud.deletefile(path=cloudSyncFolderConfig.folder+"/"+filename)
+                if backup:
+                    LoggerFactory.getLogger().info(
+                        "-> backup from=" + localSyncFolderConfig.tmpfolder + "," + "to=" + backupfolder)
+                    Utils.copyToFolder(filename, localSyncFolderConfig.tmpfolder, backupfolder)
+                LoggerFactory.getLogger().info(
+                    "-> rename from=" + localSyncFolderConfig.tmpfolder + "," + "to=" + localSyncFolderConfig.folder)
+                os.rename(os.path.join(localSyncFolderConfig.tmpfolder, filename),
+                          os.path.join(localSyncFolderConfig.folder, filename))
+                LoggerFactory.getLogger().info(
+                    "-> delete from=" + cloudSyncFolderConfig.folder)
+                pyCloud.deletefile(path=cloudSyncFolderConfig.folder + "/" + filename)
     except:
         LoggerFactory.getLogger().error(sys.exc_info())

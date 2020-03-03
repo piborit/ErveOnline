@@ -9,7 +9,7 @@ inventory="Inventory"
 items="Items"
 salesorders="SalesOrders"
 [cloud]
-basepath="/ErveOnline"
+basepath="/ErveOnline_TEST"
 erpout="erpout"
 cmsout="cmsout"
 tmp="tmp"
